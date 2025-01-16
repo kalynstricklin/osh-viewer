@@ -18,10 +18,14 @@ import React, {useEffect, useState} from "react";
 // @ts-ignore
 import {appStore} from "../state/Store";
 
+// import {DataStreams} from "osh-js/source/core/sweapi/datastream/DataStreams.js";
+
+// import {FeaturesOfInterest} from "osh-js/source/core/sweapi/featureofinterest/FeatureOfInterests.js";
 import CesiumMap from "./map/CesiumMap";
 import Settings from "./settings/Settings";
 import ContextMenu from "./menus/ContextMenu";
 import {
+    addFeatureOfInterests,
     addObservable,
     addPhysicalSystem,
     addSensorHubServer,
@@ -33,10 +37,10 @@ import {
     selectServerManagementDialogOpen,
     selectSettingsDialogOpen,
     selectSystemsDialogOpen,
-    setAppInitialized
+    setAppInitialized, updateContextMenuState
 } from "../state/Slice";
 import {useAppDispatch, useAppSelector} from "../state/Hooks";
-import {Alert, AlertTitle} from "@mui/material";
+import {Alert, AlertTitle, Grid, Paper} from "@mui/material";
 import ServerManagement from "./servers/ServerManagement";
 import AddServer from "./servers/AddServer";
 import Observables from "./observables/Observables";
@@ -46,10 +50,29 @@ import {fetchControls, fetchPhysicalSystems, fetchSubsystems} from "../net/Syste
 import {getObservables} from "../observables/ObservableUtils";
 import CenteredPopover from "./decorators/CenteredPopover";
 import Systems from "./systems/Systems";
+import FeatureOfInterests from "./featureOfInterest/FeatureOfInterests";
 import SplashScreen from "./splash/SplashScreen";
 import TimeController from "./time/TimeController";
 import StreamingDialog from "./dialogs/StreamingDialog";
-import {ObservableType} from "../data/Constants";
+import {DEFAULT_API_ENDPOINT, DEFAULT_SOS_ENDPOINT, DEFAULT_SPS_ENDPOINT, ObservableType} from "../data/Constants";
+import LeafletMap from "./map/LeafletMap";
+
+// @ts-ignore
+import DataStreams from "osh-js/source/core/sweapi/datastream/DataStreams.js";
+// @ts-ignore
+import DataStreamFilter from "osh-js/source/core/sweapi/datastream/DataStreamFilter.js";
+// @ts-ignore
+import FeaturesOfInterest from "osh-js/source/core/sweapi/featureofinterest/FeatureOfInterests.js";
+// @ts-ignore
+import FeatureOfInterest from "osh-js/source/core/sweapi/featureofinterest/FeatureOfInterest.js";
+import {fetchFeatureOfInterest} from "../net/FeatureOfInterestRequest";
+
+
+export interface Station{
+    features: typeof FeatureOfInterest;
+    datastreams: typeof DataStreams;
+
+}
 
 const App = () => {
     const dispatch = useAppDispatch();
@@ -71,17 +94,31 @@ const App = () => {
     let [showError, setShowError] = useState<boolean>(false);
     let [errorMsg, setErrorMsg] = useState<string>(null);
 
+
     useEffect(() => {
 
         const loader = async () => {
 
             await initDb();
 
+            dispatch(updateContextMenuState({ showMenu: true, top: 0, left: 0 }));
+
+
             let sensorHubServers: ISensorHubServer[] = await readSensorHubServers();
 
             for (let sensorHubServer of sensorHubServers) {
 
                 dispatch(addSensorHubServer(sensorHubServer));
+
+                await fetchFeatureOfInterest(sensorHubServer, true).then(async fois =>{
+
+                    console.log('fetch fois', fois)
+                    for(let foi of fois){
+                        console.log('dispatch foi', foi)
+                        dispatch(addFeatureOfInterests(foi));
+                    }
+
+                }).catch(() => popupError(sensorHubServer.name));
 
                 await fetchPhysicalSystems(sensorHubServer, true).then(async physicalSystems => {
 
@@ -94,6 +131,7 @@ const App = () => {
                             for (let system of physicalSystems) {
 
                                 dispatch(addPhysicalSystem(system))
+                                console.log('system', system)
                             }
                         });
 
@@ -118,6 +156,8 @@ const App = () => {
             loader().then(() => {
                     if (!showError) {
                         dispatch(setAppInitialized(true));
+
+
                         setShowConfirmation(true);
                         setTimeout(() => {
                             setShowConfirmation(false);
@@ -159,22 +199,37 @@ const App = () => {
         }, 5000)
     }
 
+
+
     return (
         <div>
+
             <ContextMenu/>
 
-            {showServerManagementDialog ? <ServerManagement title={"Servers"}/> : null}
-            {showSettingsDialog ? <Settings title={"Settings"}/> : null}
-            {showAddServerDialog ? <AddServer title={"Configure New Server"}/> : null}
-            {showObservablesDialog ? <Observables title={"Observables"}/> : null}
-            {showSystemsDialog ? <Systems title={"Systems"}/> : null}
+            <ServerManagement title={"Servers"} />
+            <Settings title={"Settings"} />
+            <AddServer title={"Configure New Server"} />
+            <Observables title={"Observables"} />
+            <Systems title={"Systems"} />
+            <FeatureOfInterests title={"Features of Interest"} />
+            {/*<SplashScreen onEnded={() => setShowSplashScreen(false)} />*/}
 
-            {showSplashScreen ? <SplashScreen onEnded={() => setShowSplashScreen(false)}/> : null}
 
-            <CesiumMap/>
-            <TimeController/>
+            <Grid container spacing={2} direction={"column"}>
+                <Grid item container spacing={2} style={{flexBasis: '66.66%', flexGrow: 0, flexShrink: 0}}>
+                    <Grid item xs={12}>
+                        <Paper variant='outlined' sx={{height: "100%"}}>
+                            <LeafletMap stationArray={null}/>
+                        </Paper>
+                    </Grid>
+                </Grid>
+            </Grid>
 
-            {videoDialogs.length > 0 ? videoDialogs : null}
+
+            {/*<CesiumMap/>*/}
+            {/*<TimeController/>*/}
+
+            {/*{videoDialogs.length > 0 ? videoDialogs : null}*/}
 
             {showConfirmation ?
                 <CenteredPopover anchorEl={document.getElementById('root')}>

@@ -1,0 +1,22 @@
+
+
+.leaflet-sidebar {
+    background-color: white;
+    color: black;
+}
+.leaflet-sidebar .leaflet-sidebar-header {
+    background-color: white;
+    color: #333;
+    border-bottom: 1px solid #ddd;
+}
+
+
+.leaflet-sidebar .leaflet-sidebar-tabs {
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ddd;
+}
+
+.leaflet-sidebar .leaflet-sidebar-content {
+    background-color: white;
+    padding: 10px;
+}

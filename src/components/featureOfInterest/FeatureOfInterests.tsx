@@ -27,21 +27,21 @@ import {
     TableRow,
 } from "@mui/material";
 import {useAppDispatch, useAppSelector} from "../../state/Hooks";
-import {selectPhysicalSystems, setSystemsDialogOpen} from "../../state/Slice";
+import {selectFeatureOfInterest, setFeatureOfInterestDialogOpen} from "../../state/Slice";
 import DraggableDialog from "../decorators/DraggableDialog";
-import SystemEntry from "./SystemEntry";
-import {IPhysicalSystem} from "../../data/Models";
+import {IFeatureOfInterest} from "../../data/Models";
+import FeatureOfInterestEntry from "./FeatureOfInterestEntry";
 
-interface ISystemsProps {
+interface IFeatureOfInterestProps {
     title: string,
     children?: any
 }
 
-const Systems = (props: ISystemsProps) => {
+const FeatureOfInterests = (props: IFeatureOfInterestProps) => {
 
     const dispatch = useAppDispatch();
 
-    let systems: Map<string, IPhysicalSystem> = useAppSelector<Map<string, IPhysicalSystem>>(selectPhysicalSystems);
+    let fois: Map<string, IFeatureOfInterest> = useAppSelector<Map<string, IFeatureOfInterest>>(selectFeatureOfInterest);
 
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(5);
@@ -57,35 +57,34 @@ const Systems = (props: ISystemsProps) => {
 
     let content: JSX.Element = (
         <Alert severity="warning" variant={"filled"}>
-            No Systems Available, Verify or Configure Server(s)
+            No Feature of Interests Available, Verify or Configure Server(s)
         </Alert>
     );
 
-    let systemEntries: JSX.Element[] = [];
+    let foiEntries:  JSX.Element[] = [];
 
-    systems.forEach((system: IPhysicalSystem) => {
+    fois.forEach((foi: IFeatureOfInterest) => {
 
-        console.log('system uuid', system)
-        if (system.parentSystemUuid == null) {
-            systemEntries.push(<SystemEntry key={system.uuid} server={system.server} system={system}/>);
+        console.log('foiiiii ', foi)
+        if (foi.parentSystemUuid == null) {
+            foiEntries.push(<FeatureOfInterestEntry key={foi.uuid} server={foi.server} foi={foi}/>);
         }
     })
 
-    if (systemEntries.length) {
+    if (foiEntries.length) {
 
         content = (
             <Paper style={{margin: '.5em', padding: '.5em'}}>
                 <TableContainer>
-                    <Table size="small" aria-label="Server Entries">
+                    <Table size="small" aria-label="Feature of Interest Entries">
                         <TableHead>
                             <TableRow>
                                 <TableCell>Name</TableCell>
                                 <TableCell>Server Name</TableCell>
-                                <TableCell align="center">Actions</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {systemEntries.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
+                            {foiEntries.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
                         </TableBody>
                     </Table>
                 </TableContainer>
@@ -93,7 +92,7 @@ const Systems = (props: ISystemsProps) => {
                 <TablePagination
                     rowsPerPageOptions={[5, 10, 15]}
                     component="div"
-                    count={systemEntries.length}
+                    count={foiEntries.length}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     onPageChange={handleChangePage}
@@ -104,10 +103,10 @@ const Systems = (props: ISystemsProps) => {
     }
 
     return (
-        <DraggableDialog title={props.title} onClose={() => dispatch(setSystemsDialogOpen(false))}>
+        <DraggableDialog title={props.title} onClose={() => dispatch(setFeatureOfInterestDialogOpen(false))}>
             {content}
         </DraggableDialog>
     );
 }
 
-export default Systems;
+export default FeatureOfInterests;

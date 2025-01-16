@@ -21,6 +21,7 @@ export async function fetchDataStreams(server: SensorHubServer, withCredentials:
 
     let request: string = server.address + Service.API + "/datastreams?f=application%2Fjson";
 
+    console.log('ds request string', request)
     let options: RequestInit = {};
     options.method = "GET";
     if (withCredentials) {

@@ -29,6 +29,7 @@ import SweApi from "osh-js/source/core/datasource/sweapi/SweApi.datasource"
 // @ts-ignore
 import {randomUUID} from "osh-js/source/core/utils/Utils";
 
+
 // Settings ==============================================================
 
 export interface ISettings {
@@ -88,7 +89,8 @@ export interface ISensorHubServer {
     apiEndpoint: string,
     authToken: string,
     secure: boolean,
-    systems: IPhysicalSystem[]
+    systems: IPhysicalSystem[],
+    foi: IFeatureOfInterest[]
 }
 
 const sensorHubServerProps: ISensorHubServer = {
@@ -101,6 +103,7 @@ const sensorHubServerProps: ISensorHubServer = {
     authToken: "",
     secure: false,
     systems: [],
+    foi: []
 }
 
 export class SensorHubServer implements ISensorHubServer {
@@ -114,6 +117,7 @@ export class SensorHubServer implements ISensorHubServer {
     authToken: string;
     secure: boolean;
     systems: IPhysicalSystem[];
+    foi: IFeatureOfInterest[];
 
     constructor(props: ISensorHubServer = sensorHubServerProps) {
         this.address = props.address;
@@ -125,6 +129,7 @@ export class SensorHubServer implements ISensorHubServer {
         this.authToken = props.authToken;
         this.secure = props.secure || props.address.startsWith("https://");
         this.systems = props.systems;
+        this.foi = props.foi;
     }
 }
 
@@ -340,6 +345,52 @@ export class SystemControl implements IControl {
         this.systemId = props.systemId;
     }
 }
+//Feature Of Interest ========================================================
+
+export interface IFeatureOfInterest {
+    name: string,
+    serverUid: string,
+    foiId: string,
+    uuid: string,
+    geometry: any,
+    server: ISensorHubServer,
+    parentSystemUuid: string | null,
+}
+
+const foiProps: IFeatureOfInterest = {
+    name: "",
+    serverUid: "",
+    foiId: "",
+    uuid: null,
+    geometry: [],
+    server: null,
+    parentSystemUuid: null,
+}
+
+export class FeatureOfInterest implements IFeatureOfInterest{
+    name: string;
+    serverUid: string;
+    foiId: string;
+    uuid: string;
+    geometry: any;
+    server: ISensorHubServer;
+    parentSystemUuid: string;
+
+    constructor(props: IFeatureOfInterest = foiProps) {
+        this.name = props.name;
+        this.serverUid = props.serverUid;
+        this.foiId = props.foiId;
+        this.uuid = props.uuid;
+        this.server = props.server;
+        this.parentSystemUuid = props.parentSystemUuid;
+    }
+}
+// export interface IFeatureOfInterestDatastreams{
+//     featureOfInterest: typeof FeaturesOfInterest,
+//     datastreams: typeof DataStreams
+// }
+
+
 
 // PhysicalSystem =============================================================
 export interface IPhysicalSystem {

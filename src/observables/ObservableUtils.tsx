@@ -39,12 +39,14 @@ export interface IObservableTypeInfo {
 
 export async function getObservables(server: SensorHubServer, withCredentials: boolean): Promise<IObservable[]> {
 
+    console.log('fetching observables', server)
     let observables: IObservable[] = [];
 
     let systemObservablesMap: Map<string, IObservableTypeInfo[]> = new Map<string, IObservableTypeInfo[]>();
 
     let dataStreamsResponse = await fetchDataStreams(server, withCredentials);
 
+    console.log('datastream Response', dataStreamsResponse)
     let dataStreamInfo = findInObject(dataStreamsResponse, 'items');
 
     for (let dataStream of dataStreamInfo) {
@@ -91,6 +93,8 @@ export async function getObservables(server: SensorHubServer, withCredentials: b
                     schema: resultSchema,
                     definition: definition
                 }
+
+                // console.log('info', info)
 
                 let key: string = (physicalSystem.parentSystemUuid === null) ? physicalSystem.uuid : physicalSystem.parentSystemUuid;
 

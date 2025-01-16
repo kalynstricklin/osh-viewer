@@ -28,17 +28,27 @@ import {
     Tooltip
 } from "@mui/material";
 import {useAppDispatch} from "../../state/Hooks";
-import {addObservable, addPhysicalSystem, addSensorHubServer, setAddServerDialogOpen} from "../../state/Slice";
+import {
+    addFeatureOfInterests,
+    addObservable,
+    addPhysicalSystem,
+    addSensorHubServer,
+    setAddServerDialogOpen
+} from "../../state/Slice";
 import {Cancel, Done} from "@mui/icons-material";
 import {ISensorHubServer, SensorHubServer} from "../../data/Models";
-import {fetchControls, fetchPhysicalSystems, fetchSubsystems} from "../../net/SystemRequest";
-import {storeSensorHubServer} from "../../database/database";
-import {getObservables} from "../../observables/ObservableUtils";
 import DraggableDialog from "../decorators/DraggableDialog";
 import CenteredPopover from "../decorators/CenteredPopover";
 import {DEFAULT_API_ENDPOINT, DEFAULT_SOS_ENDPOINT, DEFAULT_SPS_ENDPOINT} from "../../data/Constants";
 // @ts-ignore
 import {randomUUID} from "osh-js/source/core/utils/Utils";
+import {
+    fetchFeatureOfInterest,
+} from "../../net/FeatureOfInterestRequest";
+import {fetchControls, fetchPhysicalSystems, fetchSubsystems } from "../../net/SystemRequest";
+import { getObservables } from "../../observables/ObservableUtils";
+import {storeSensorHubServer} from "../../database/database";
+
 
 interface IAddServerProps {
     title: string,
@@ -66,6 +76,7 @@ const AddServer = (props: IAddServerProps) => {
 
         try {
 
+            console.log('url:', urlString, Boolean(new URL(urlString)))
             return Boolean(new URL(urlString));
 
         } catch (e) {
@@ -111,6 +122,7 @@ const AddServer = (props: IAddServerProps) => {
 
         if (!hasErrors) {
 
+            console.log('no errors')
             setAddingServer(true);
 
             let server: ISensorHubServer = new SensorHubServer({
@@ -123,6 +135,21 @@ const AddServer = (props: IAddServerProps) => {
                 authToken: createAuthToken(userName, password),
                 secure: false,
                 systems: [],
+                foi: []
+            });
+
+
+            fetchFeatureOfInterest(server, true).then(async fois => {
+                console.log('fetch fois', fois)
+                for(let foi of fois){
+                    console.log('dispatch foi', foi)
+                    dispatch(addFeatureOfInterests(foi));
+                }
+
+
+            }).catch((reason) => {
+                console.error(reason);
+                popupError()
             });
 
             fetchPhysicalSystems(server, true).then(async physicalSystems => {
@@ -131,7 +158,7 @@ const AddServer = (props: IAddServerProps) => {
 
                 for (let system of physicalSystems) {
 
-                    await fetchControls(server, true, system).then();
+                    // await fetchControls(server, true, system).then();
 
                     await fetchSubsystems(server, true, system).then(async physicalSystems =>{
 
@@ -146,6 +173,7 @@ const AddServer = (props: IAddServerProps) => {
 
                 await getObservables(server as SensorHubServer, true).then(observables => {
 
+                    console.log('observables', observables)
                     for (let observable of observables) {
 
                         dispatch(addObservable(observable))
@@ -201,7 +229,7 @@ const AddServer = (props: IAddServerProps) => {
                                          Add Server
                                      </Button>
                                  </Tooltip>
-                                 <Tooltip title={"Add Server"}>
+                                 <Tooltip title={"Discard Server"}>
                                      <Button variant={"contained"} startIcon={<Cancel/>} onClick={cancel}>
                                          Cancel
                                      </Button>

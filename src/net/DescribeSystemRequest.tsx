@@ -13,12 +13,20 @@
  *
  */
 
-import {IPhysicalSystem, ISensorHubServer} from "../data/Models";
+import {IFeatureOfInterest, IPhysicalSystem, ISensorHubServer} from "../data/Models";
 import {Service} from "../data/Constants";
 
 export function describeSystem(server: ISensorHubServer, system: IPhysicalSystem) {
 
     const systemRequestClause = `/systems/${system.systemId}`;
+
+    window.open(server.address + Service.API + systemRequestClause, null, null);
+}
+
+
+export function describeFoi(server: ISensorHubServer, system: IFeatureOfInterest) {
+
+    const systemRequestClause = `/systems/${system.foiId}`;
 
     window.open(server.address + Service.API + systemRequestClause, null, null);
 }

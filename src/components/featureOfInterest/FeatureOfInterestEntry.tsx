@@ -15,47 +15,36 @@
 
 import React from "react";
 import {IconButton, TableCell, TableRow, Tooltip} from "@mui/material";
-import {Description, SportsEsports} from "@mui/icons-material";
-import {IPhysicalSystem, ISensorHubServer} from "../../data/Models";
-import {describeSystem} from "../../net/DescribeSystemRequest";
+import {Description} from "@mui/icons-material";
+import {IFeatureOfInterest, ISensorHubServer} from "../../data/Models";
+import {describeFoi} from "../../net/DescribeSystemRequest";
 // @ts-ignore
 import {ReactJSXElement} from "@emotion/react/types/jsx-namespace";
 
-interface SystemEntryProps {
+interface FeatureOfInterestEntryProps {
 
     server: ISensorHubServer,
-    system: IPhysicalSystem
+    foi: IFeatureOfInterest
 }
 
-const SystemEntry = (props: SystemEntryProps) => {
+const FeatureOfInterestEntry = (props: FeatureOfInterestEntryProps) => {
 
     let controls : ReactJSXElement[] = [];
 
-    for (let control of props.system.systemControls) {
-
-        controls.push(
-            <IconButton color={"success"} onClick={() => console.log("Control Action")}>
-                <Tooltip title={control.name} placement={"bottom-start"}>
-                    <SportsEsports/>
-                </Tooltip>
-            </IconButton>
-        )
-    }
-
     return (
         <TableRow
-            key={props.system.uuid}
+            key={props.foi.uuid}
             sx={{'&:last-child td, &:last-child th': {border: 0}}}
         >
             <TableCell component="th" scope="row">
-                {props.system.name}
+                {props.foi.name}
             </TableCell>
             <TableCell component="th" scope="row">
                 {props.server.name}
             </TableCell>
             <TableCell>
-                <IconButton color={"info"} onClick={() => describeSystem(props.server, props.system)}>
-                    <Tooltip title={"Describe System"} placement={"bottom-start"}>
+                <IconButton color={"info"} onClick={() => describeFoi(props.server, props.foi)}>
+                    <Tooltip title={"Describe Feature of Interest"} placement={"bottom-start"}>
                         <Description/>
                     </Tooltip>
                 </IconButton>
@@ -65,4 +54,4 @@ const SystemEntry = (props: SystemEntryProps) => {
     );
 }
 
-export default SystemEntry;
+export default FeatureOfInterestEntry;

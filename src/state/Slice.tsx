@@ -19,7 +19,7 @@ import {enableMapSet} from 'immer';
 
 import {
     ContextMenuState,
-    IContextMenu,
+    IContextMenu, IFeatureOfInterest,
     IMasterTime,
     IObservable,
     IPhysicalSystem,
@@ -65,12 +65,14 @@ interface IAppState {
     addServerDialogOpen: boolean,
     observablesDialogOpen: boolean,
     systemsDialogOpen: boolean,
+    featureOfInterestDialogOpen: boolean,
 
     mapView: MapView,
 
     masterTime: IMasterTime,
     sensorHubServers: Map<string, ISensorHubServer>,
     physicalSystems: Map<string, IPhysicalSystem>,
+    featureOfInterests: Map<string, IFeatureOfInterest>,
     observables: Map<string, IObservable>,
 
     dataSynchronizer: DataSynchronizer,
@@ -88,17 +90,19 @@ const initialState: IAppState = {
     settings: new Settings(),
     contextMenuState: new ContextMenuState(),
 
-    settingsDialogOpen: false,
-    serverManagementDialogOpen: false,
-    addServerDialogOpen: false,
-    observablesDialogOpen: false,
-    systemsDialogOpen: false,
+    settingsDialogOpen: true,
+    serverManagementDialogOpen: true,
+    addServerDialogOpen: true,
+    observablesDialogOpen: true,
+    systemsDialogOpen: true,
+    featureOfInterestDialogOpen: true,
 
     mapView: typeof MapView,
 
     masterTime: new MasterTime(),
     sensorHubServers: new Map<string, ISensorHubServer>(),
     physicalSystems: new Map<string, IPhysicalSystem>(),
+    featureOfInterests: new Map<string, IFeatureOfInterest>(),
     observables: new Map<string, IObservable>(),
 
     dataSynchronizer: new DataSynchronizer({
@@ -189,6 +193,11 @@ export const Slice = createSlice({
             state.systemsDialogOpen = action.payload;
         }),
 
+        setFeatureOfInterestDialogOpen: ((state, action: PayloadAction<boolean>) => {
+
+            state.featureOfInterestDialogOpen = action.payload;
+        }),
+
         // Map *********************************************************************************************************
         setMapView: ((state, action: PayloadAction<typeof MapView>) => {
 
@@ -229,6 +238,7 @@ export const Slice = createSlice({
                 })
 
                 state.physicalSystems.delete(system.uuid);
+                state.featureOfInterests.delete(system.uuid);
             });
 
             state.sensorHubServers.delete(action.payload.uuid);
@@ -240,6 +250,14 @@ export const Slice = createSlice({
             // @ts-ignore
             state.physicalSystems.set(action.payload.uuid, action.payload);
         }),
+
+        // Feature of Interests *****************************************************************************************************
+        addFeatureOfInterests: ((state, action: PayloadAction<IFeatureOfInterest>) => {
+
+            // @ts-ignore
+            state.featureOfInterests.set(action.payload.uuid, action.payload);
+        }),
+
 
         // Observables *************************************************************************************************
         addObservable: ((state, action: PayloadAction<IObservable>) => {
@@ -506,6 +524,7 @@ export const {
     setAddServerDialogOpen,
     setObservablesDialogOpen,
     setSystemsDialogOpen,
+    setFeatureOfInterestDialogOpen,
 
     setMapView,
 
@@ -513,6 +532,7 @@ export const {
     removeSensorHubServer,
 
     addPhysicalSystem,
+    addFeatureOfInterests,
 
     addObservable,
     showObservable,
@@ -542,6 +562,7 @@ export const selectSystemsDialogOpen = (state: RootState) => state.appState.syst
 
 export const selectServers = (state: RootState) => state.appState.sensorHubServers
 export const selectPhysicalSystems = (state: RootState) => state.appState.physicalSystems
+export const selectFeatureOfInterest = (state: RootState) => state.appState.featureOfInterests
 export const selectObservables = (state: RootState) => state.appState.observables
 
 export const selectMasterTime = (state: RootState) => state.appState.masterTime
