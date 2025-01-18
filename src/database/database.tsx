@@ -193,6 +193,7 @@ export const readSensorHubServers = async function (): Promise<ISensorHubServer[
             authToken: existingServer.authToken,
             secure: existingServer.secure,
             systems: [],
+            foi: []
         });
 
         sensorHubServer.push(server);

@@ -3,7 +3,7 @@ import { Divider, ListItemIcon, ListItemText, Menu, MenuItem, MenuList, Paper } 
 import { useAppDispatch, useAppSelector } from "../../state/Hooks";
 import {
     selectContextMenuState,
-    setAddServerDialogOpen,
+    setAddServerDialogOpen, setFeatureOfInterestDialogOpen,
     setObservablesDialogOpen,
     setServerManagementDialogOpen,
     setSettingsDialogOpen,
@@ -34,6 +34,11 @@ const ContextMenu = () => {
     const openSystems = () => {
         dispatch(updateContextMenuState({ showMenu: false }));
         dispatch(setSystemsDialogOpen(true));
+    };
+
+    const openFeaturesOfInterests = () => {
+        dispatch(updateContextMenuState({ showMenu: false }));
+        dispatch(setFeatureOfInterestDialogOpen(true));
     };
 
     const openAddServer = () => {
@@ -71,6 +76,12 @@ const ContextMenu = () => {
                             <Hub color="primary" fontSize="medium" />
                         </ListItemIcon>
                         <ListItemText primary="Systems" />
+                    </MenuItem>
+                    <MenuItem onClick={openFeaturesOfInterests}>
+                        <ListItemIcon>
+                            <Hub color="primary" fontSize="medium" />
+                        </ListItemIcon>
+                        <ListItemText primary="Features of Interest" />
                     </MenuItem>
                     <Divider orientation="horizontal" />
                     <MenuItem onClick={openAddServer}>

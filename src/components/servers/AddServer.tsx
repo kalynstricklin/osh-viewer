@@ -29,6 +29,7 @@ import {
 } from "@mui/material";
 import {useAppDispatch} from "../../state/Hooks";
 import {
+    addFeatureOfInterestDatastreams,
     addFeatureOfInterests,
     addObservable,
     addPhysicalSystem,
@@ -42,12 +43,14 @@ import CenteredPopover from "../decorators/CenteredPopover";
 import {DEFAULT_API_ENDPOINT, DEFAULT_SOS_ENDPOINT, DEFAULT_SPS_ENDPOINT} from "../../data/Constants";
 // @ts-ignore
 import {randomUUID} from "osh-js/source/core/utils/Utils";
-import {
-    fetchFeatureOfInterest,
-} from "../../net/FeatureOfInterestRequest";
+import {fetchFeatureOfInterests,} from "../../net/FeatureOfInterestRequest";
 import {fetchControls, fetchPhysicalSystems, fetchSubsystems } from "../../net/SystemRequest";
 import { getObservables } from "../../observables/ObservableUtils";
 import {storeSensorHubServer} from "../../database/database";
+import {fetchDataStreams} from "../../net/DataStreamsRequest";
+import {fetchFeatureOfInterestDatastreams} from "../../net/DataStreamsFromFoiRequest";
+// @ts-ignore
+import DataStreamFilter from "osh-js/source/core/sweapi/datastream/DataStreamFilter";
 
 
 interface IAddServerProps {
@@ -75,8 +78,6 @@ const AddServer = (props: IAddServerProps) => {
     const isValidUrl = (urlString: string): boolean => {
 
         try {
-
-            console.log('url:', urlString, Boolean(new URL(urlString)))
             return Boolean(new URL(urlString));
 
         } catch (e) {
@@ -122,7 +123,6 @@ const AddServer = (props: IAddServerProps) => {
 
         if (!hasErrors) {
 
-            console.log('no errors')
             setAddingServer(true);
 
             let server: ISensorHubServer = new SensorHubServer({
@@ -139,11 +139,23 @@ const AddServer = (props: IAddServerProps) => {
             });
 
 
-            fetchFeatureOfInterest(server, true).then(async fois => {
-                console.log('fetch fois', fois)
-                for(let foi of fois){
-                    console.log('dispatch foi', foi)
-                    dispatch(addFeatureOfInterests(foi));
+            fetchFeatureOfInterests(server, true).then(async samplingfeatures => {
+                // for(let foi of fois) {
+                //     dispatch(addFeatureOfInterests(foi));
+                // }
+
+                const allFoiCol = await samplingfeatures.searchFeaturesOfInterest(undefined, 999999);
+                const allFoi = await allFoiCol.nextPage();
+
+
+                for (let index= 0; index < 200; index++) {
+                    await fetchFeatureOfInterestDatastreams(server, true, allFoi[index]).then(foiDataStreams =>{
+
+                        if(!foiDataStreams || foiDataStreams.length === 0){
+                            return;
+                        }
+                        dispatch(addFeatureOfInterestDatastreams({foi: allFoi[index], datastreams: foiDataStreams}));
+                    });
                 }
 
 
@@ -173,7 +185,6 @@ const AddServer = (props: IAddServerProps) => {
 
                 await getObservables(server as SensorHubServer, true).then(observables => {
 
-                    console.log('observables', observables)
                     for (let observable of observables) {
 
                         dispatch(addObservable(observable))

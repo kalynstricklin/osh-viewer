@@ -28,6 +28,8 @@ import Layer from "osh-js/source/core/ui/layer/Layer";
 import SweApi from "osh-js/source/core/datasource/sweapi/SweApi.datasource"
 // @ts-ignore
 import {randomUUID} from "osh-js/source/core/utils/Utils";
+// @ts-ignore
+import DataStreams from "osh-js/source/core/sweapi/datastream/DataStreams.js";
 
 
 // Settings ==============================================================
@@ -352,9 +354,10 @@ export interface IFeatureOfInterest {
     serverUid: string,
     foiId: string,
     uuid: string,
-    geometry: any,
+    geometry: {lat: number, lon: number} | null,
     server: ISensorHubServer,
     parentSystemUuid: string | null,
+    datastreams: any[],
 }
 
 const foiProps: IFeatureOfInterest = {
@@ -362,9 +365,10 @@ const foiProps: IFeatureOfInterest = {
     serverUid: "",
     foiId: "",
     uuid: null,
-    geometry: [],
+    geometry: {lat: 0, lon: 0},
     server: null,
     parentSystemUuid: null,
+    datastreams: [],
 }
 
 export class FeatureOfInterest implements IFeatureOfInterest{
@@ -372,9 +376,11 @@ export class FeatureOfInterest implements IFeatureOfInterest{
     serverUid: string;
     foiId: string;
     uuid: string;
-    geometry: any;
+    geometry: { lat: number, lon: number };
     server: ISensorHubServer;
     parentSystemUuid: string;
+    datastreams: any[];
+
 
     constructor(props: IFeatureOfInterest = foiProps) {
         this.name = props.name;
@@ -383,13 +389,15 @@ export class FeatureOfInterest implements IFeatureOfInterest{
         this.uuid = props.uuid;
         this.server = props.server;
         this.parentSystemUuid = props.parentSystemUuid;
+        this.datastreams = props.datastreams;
+        this.geometry = props.geometry;
     }
 }
-// export interface IFeatureOfInterestDatastreams{
-//     featureOfInterest: typeof FeaturesOfInterest,
-//     datastreams: typeof DataStreams
-// }
 
+export interface FeatureOfInterestData {
+    featureOfInterest: IFeatureOfInterest,
+    datastreams: typeof DataStreams;
+}
 
 
 // PhysicalSystem =============================================================

@@ -65,7 +65,7 @@ const Systems = (props: ISystemsProps) => {
 
     systems.forEach((system: IPhysicalSystem) => {
 
-        console.log('system uuid', system)
+        // console.log('system uuid', system)
         if (system.parentSystemUuid == null) {
             systemEntries.push(<SystemEntry key={system.uuid} server={system.server} system={system}/>);
         }

@@ -24,9 +24,9 @@ export function describeSystem(server: ISensorHubServer, system: IPhysicalSystem
 }
 
 
-export function describeFoi(server: ISensorHubServer, system: IFeatureOfInterest) {
+export function describeFoi(server: ISensorHubServer, foi: IFeatureOfInterest) {
 
-    const systemRequestClause = `/systems/${system.foiId}`;
+    const systemRequestClause = `/samplingFeatures/${foi.foiId}`;
 
     window.open(server.address + Service.API + systemRequestClause, null, null);
 }

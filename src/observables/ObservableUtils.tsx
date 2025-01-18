@@ -14,6 +14,7 @@
  */
 
 import {
+    IFeatureOfInterest,
     IObservable,
     IPhysicalSystem,
     IPhysicalSystemTime,
@@ -39,17 +40,21 @@ export interface IObservableTypeInfo {
 
 export async function getObservables(server: SensorHubServer, withCredentials: boolean): Promise<IObservable[]> {
 
-    console.log('fetching observables', server)
     let observables: IObservable[] = [];
 
     let systemObservablesMap: Map<string, IObservableTypeInfo[]> = new Map<string, IObservableTypeInfo[]>();
 
-    let dataStreamsResponse = await fetchDataStreams(server, withCredentials);
+    let response = await fetchDataStreams(server, withCredentials).catch(reason =>{
+        console.error("Datastream request failed on:" + server.name);
+        throw new Error(reason);
 
-    console.log('datastream Response', dataStreamsResponse)
-    let dataStreamInfo = findInObject(dataStreamsResponse, 'items');
+    });
+
+
+    let dataStreamInfo: any[] = findInObject(response, 'items');
 
     for (let dataStream of dataStreamInfo) {
+
 
         let systemId: string = findInObject(dataStream, 'system@id');
 
@@ -83,6 +88,7 @@ export async function getObservables(server: SensorHubServer, withCredentials: b
 
                 let schemaResponse = await fetchDataStreamSchema(server, true, dataStreamId);
 
+
                 let resultSchema = findInObject(schemaResponse, 'resultSchema');
 
                 let definition = findInObject(schemaResponse, 'definition');
@@ -94,11 +100,9 @@ export async function getObservables(server: SensorHubServer, withCredentials: b
                     definition: definition
                 }
 
-                // console.log('info', info)
-
                 let key: string = (physicalSystem.parentSystemUuid === null) ? physicalSystem.uuid : physicalSystem.parentSystemUuid;
 
-                if(systemObservablesMap.has(key)) {
+                if (systemObservablesMap.has(key)) {
 
                     systemObservablesMap.get(key).push(info);
 
@@ -113,7 +117,6 @@ export async function getObservables(server: SensorHubServer, withCredentials: b
     let observable: IObservable = null;
 
     systemObservablesMap.forEach((value:IObservableTypeInfo[], key:string) => {
-
         observable = buildPliMarkers(value);
 
         if (observable != null) {
@@ -137,7 +140,29 @@ export async function getObservables(server: SensorHubServer, withCredentials: b
     } );
 
     return observables;
+
 }
+
+
+// export async function getObservablesFoi(server: SensorHubServer, withCredentials: boolean){
+//
+//     let response = await fetchDataStreams(server, withCredentials).catch(reason =>{
+//         console.error("Datastream request failed on:" + server.name);
+//         throw new Error(reason);
+//
+//     });
+//
+//     console.log('datastream Response', response);
+//
+//     let dataStreamInfo: any[] = findInObject(response, 'items');
+//
+//     console.log('datastream info', dataStreamInfo)
+//
+//
+//
+//     return '';
+//
+// }
 
 /**
  * Finds a path to a given by a specific term within the paths returned from discovery
@@ -190,4 +215,28 @@ export function getPhysicalSystem(server: SensorHubServer, systemId: string): IP
     }
 
     return physicalSystem;
+}
+
+
+/**
+ * Finds a foi, if any, belonging to the give server with the given id
+ * @param server The server to lookup the foi in
+ * @param foiId The id of the foi being searched for
+ *
+ * @return null if no physical system is found, otherwise the physical system object
+ */
+export function getFeatureOfInterest(server: SensorHubServer, foiId: string): IFeatureOfInterest {
+
+    let featureOfInterest: IFeatureOfInterest = null;
+
+    for (let foi of server.foi) {
+
+        if (foi.foiId === foiId) {
+
+            featureOfInterest = foi;
+            break;
+        }
+    }
+
+    return featureOfInterest;
 }

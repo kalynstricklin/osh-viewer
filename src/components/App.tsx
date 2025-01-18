@@ -14,24 +14,17 @@
  */
 
 import React, {useEffect, useState} from "react";
-
-// @ts-ignore
-import {appStore} from "../state/Store";
-
-// import {DataStreams} from "osh-js/source/core/sweapi/datastream/DataStreams.js";
-
-// import {FeaturesOfInterest} from "osh-js/source/core/sweapi/featureofinterest/FeatureOfInterests.js";
-import CesiumMap from "./map/CesiumMap";
 import Settings from "./settings/Settings";
 import ContextMenu from "./menus/ContextMenu";
 import {
+    addFeatureOfInterestDatastreams,
     addFeatureOfInterests,
     addObservable,
     addPhysicalSystem,
     addSensorHubServer,
     selectAddServerDialogOpen,
     selectAppInitialized,
-    selectConnectedObservables,
+    selectConnectedObservables, selectFeaturesOfInterestDialogOpen,
     selectObservables,
     selectObservablesDialogOpen,
     selectServerManagementDialogOpen,
@@ -40,7 +33,7 @@ import {
     setAppInitialized, updateContextMenuState
 } from "../state/Slice";
 import {useAppDispatch, useAppSelector} from "../state/Hooks";
-import {Alert, AlertTitle, Grid, Paper} from "@mui/material";
+import {Alert, AlertTitle} from "@mui/material";
 import ServerManagement from "./servers/ServerManagement";
 import AddServer from "./servers/AddServer";
 import Observables from "./observables/Observables";
@@ -51,21 +44,17 @@ import {getObservables} from "../observables/ObservableUtils";
 import CenteredPopover from "./decorators/CenteredPopover";
 import Systems from "./systems/Systems";
 import FeatureOfInterests from "./featureOfInterest/FeatureOfInterests";
-import SplashScreen from "./splash/SplashScreen";
-import TimeController from "./time/TimeController";
 import StreamingDialog from "./dialogs/StreamingDialog";
-import {DEFAULT_API_ENDPOINT, DEFAULT_SOS_ENDPOINT, DEFAULT_SPS_ENDPOINT, ObservableType} from "../data/Constants";
-import LeafletMap from "./map/LeafletMap";
+import {ObservableType} from "../data/Constants";
+
 
 // @ts-ignore
 import DataStreams from "osh-js/source/core/sweapi/datastream/DataStreams.js";
 // @ts-ignore
-import DataStreamFilter from "osh-js/source/core/sweapi/datastream/DataStreamFilter.js";
-// @ts-ignore
-import FeaturesOfInterest from "osh-js/source/core/sweapi/featureofinterest/FeatureOfInterests.js";
-// @ts-ignore
 import FeatureOfInterest from "osh-js/source/core/sweapi/featureofinterest/FeatureOfInterest.js";
-import {fetchFeatureOfInterest} from "../net/FeatureOfInterestRequest";
+import {fetchFeatureOfInterests} from "../net/FeatureOfInterestRequest";
+import STIMap from "./map/STIMap";
+import {fetchFeatureOfInterestDatastreams} from "../net/DataStreamsFromFoiRequest";
 
 
 export interface Station{
@@ -86,6 +75,7 @@ const App = () => {
     let showObservablesDialog = useAppSelector(selectObservablesDialogOpen);
     let showAddServerDialog = useAppSelector(selectAddServerDialogOpen);
     let showSystemsDialog = useAppSelector(selectSystemsDialogOpen);
+    let showFeaturesOfInterestDialog= useAppSelector(selectFeaturesOfInterestDialogOpen);
 
     let connectedObservables = useAppSelector(selectConnectedObservables);
     let observables = useAppSelector(selectObservables);
@@ -110,15 +100,29 @@ const App = () => {
 
                 dispatch(addSensorHubServer(sensorHubServer));
 
-                await fetchFeatureOfInterest(sensorHubServer, true).then(async fois =>{
+                // await  fetchFeatureOfInterests(sensorHubServer, true).then(async samplingfeatures => {
+                //     // for(let foi of fois) {
+                //     //     dispatch(addFeatureOfInterests(foi));
+                //     // }
+                //
+                //     const allFoiCol = await samplingfeatures.searchFeaturesOfInterest(undefined, 999999);
+                //     const allFoi = await allFoiCol.nextPage();
+                //
+                //
+                //     for (let index= 0; index < 2500; index++) {
+                //         console.log('foi', allFoi[index])
+                //         await fetchFeatureOfInterestDatastreams(sensorHubServer, true, allFoi[index]).then(foiDataStreams =>{
+                //             dispatch(addFeatureOfInterestDatastreams({foi: allFoi[index], datastreams: foiDataStreams}));
+                //         });
+                //     }
+                // }).catch(() => popupError(sensorHubServer.name));
+                // await fetchFeatureOfInterest(sensorHubServer, true).then(async fois =>{
+                //     for(let foi of fois){
+                //         dispatch(addFeatureOfInterests(foi));
+                //     }
+                //
+                // }).catch(() => popupError(sensorHubServer.name));
 
-                    console.log('fetch fois', fois)
-                    for(let foi of fois){
-                        console.log('dispatch foi', foi)
-                        dispatch(addFeatureOfInterests(foi));
-                    }
-
-                }).catch(() => popupError(sensorHubServer.name));
 
                 await fetchPhysicalSystems(sensorHubServer, true).then(async physicalSystems => {
 
@@ -131,7 +135,6 @@ const App = () => {
                             for (let system of physicalSystems) {
 
                                 dispatch(addPhysicalSystem(system))
-                                console.log('system', system)
                             }
                         });
 
@@ -206,30 +209,25 @@ const App = () => {
 
             <ContextMenu/>
 
-            <ServerManagement title={"Servers"} />
-            <Settings title={"Settings"} />
-            <AddServer title={"Configure New Server"} />
-            <Observables title={"Observables"} />
-            <Systems title={"Systems"} />
-            <FeatureOfInterests title={"Features of Interest"} />
+
+            {showServerManagementDialog ? <ServerManagement title={"Servers"}/> : null}
+            {showSettingsDialog ? <Settings title={"Settings"}/> : null}
+            {showAddServerDialog ? <AddServer title={"Configure New Server"}/> : null}
+            {showObservablesDialog ? <Observables title={"Observables"}/> : null}
+            {showSystemsDialog ? <Systems title={"Systems"}/> : null}
+            {showFeaturesOfInterestDialog ? <FeatureOfInterests title={"Features of Interest"}/> : null}
+            {/*<ServerManagement title={"Servers"} />*/}
+            {/*<Settings title={"Settings"} />*/}
+            {/*<AddServer title={"Configure New Server"} />*/}
+            {/*<Observables title={"Observables"} />*/}
+            {/*<Systems title={"Systems"} />*/}
+            {/*<FeatureOfInterests title={"Features of Interest"} />*/}
             {/*<SplashScreen onEnded={() => setShowSplashScreen(false)} />*/}
 
 
-            <Grid container spacing={2} direction={"column"}>
-                <Grid item container spacing={2} style={{flexBasis: '66.66%', flexGrow: 0, flexShrink: 0}}>
-                    <Grid item xs={12}>
-                        <Paper variant='outlined' sx={{height: "100%"}}>
-                            <LeafletMap stationArray={null}/>
-                        </Paper>
-                    </Grid>
-                </Grid>
-            </Grid>
+            {/*<LeafletMap stationArray={null}/>*/}
 
-
-            {/*<CesiumMap/>*/}
-            {/*<TimeController/>*/}
-
-            {/*{videoDialogs.length > 0 ? videoDialogs : null}*/}
+            <STIMap/>
 
             {showConfirmation ?
                 <CenteredPopover anchorEl={document.getElementById('root')}>

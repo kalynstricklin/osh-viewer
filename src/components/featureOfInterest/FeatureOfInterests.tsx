@@ -64,8 +64,6 @@ const FeatureOfInterests = (props: IFeatureOfInterestProps) => {
     let foiEntries:  JSX.Element[] = [];
 
     fois.forEach((foi: IFeatureOfInterest) => {
-
-        console.log('foiiiii ', foi)
         if (foi.parentSystemUuid == null) {
             foiEntries.push(<FeatureOfInterestEntry key={foi.uuid} server={foi.server} foi={foi}/>);
         }

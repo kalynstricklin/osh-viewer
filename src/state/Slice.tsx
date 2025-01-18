@@ -50,6 +50,8 @@ import {Mode} from "osh-js/source/core/datasource/Mode";
 import SweApi from "osh-js/source/core/datasource/sweapi/SweApi.datasource";
 // @ts-ignore
 import VideoDataLayer from "osh-js/source/core/ui/layer/VideoDataLayer"
+// @ts-ignore
+import DataStreams from "osh-js/source/core/sweapi/datastream/DataStreams.js";
 
 enableMapSet();
 
@@ -66,6 +68,8 @@ interface IAppState {
     observablesDialogOpen: boolean,
     systemsDialogOpen: boolean,
     featureOfInterestDialogOpen: boolean,
+
+    featureOfInterestsDatastreams: Map<any, DataStreams>,
 
     mapView: MapView,
 
@@ -96,6 +100,8 @@ const initialState: IAppState = {
     observablesDialogOpen: true,
     systemsDialogOpen: true,
     featureOfInterestDialogOpen: true,
+
+    featureOfInterestsDatastreams: new Map<any, DataStreams>(),
 
     mapView: typeof MapView,
 
@@ -198,6 +204,13 @@ export const Slice = createSlice({
             state.featureOfInterestDialogOpen = action.payload;
         }),
 
+        // Foi Map *********************************************************************************************************
+        addFeatureOfInterestDatastreams: ((state, action: PayloadAction<{foi: any, datastreams: DataStreams}>) => {
+            const {foi, datastreams} = action.payload;
+            state.featureOfInterestsDatastreams.set(foi, datastreams);
+        }),
+
+
         // Map *********************************************************************************************************
         setMapView: ((state, action: PayloadAction<typeof MapView>) => {
 
@@ -238,8 +251,14 @@ export const Slice = createSlice({
                 })
 
                 state.physicalSystems.delete(system.uuid);
-                state.featureOfInterests.delete(system.uuid);
+
             });
+            action.payload.foi.forEach((feature: IFeatureOfInterest) => {
+
+                state.featureOfInterests.delete(feature.uuid);
+
+            });
+
 
             state.sensorHubServers.delete(action.payload.uuid);
         }),
@@ -526,6 +545,7 @@ export const {
     setSystemsDialogOpen,
     setFeatureOfInterestDialogOpen,
 
+
     setMapView,
 
     addSensorHubServer,
@@ -533,6 +553,7 @@ export const {
 
     addPhysicalSystem,
     addFeatureOfInterests,
+    addFeatureOfInterestDatastreams,
 
     addObservable,
     showObservable,
@@ -559,10 +580,13 @@ export const selectServerManagementDialogOpen = (state: RootState) => state.appS
 export const selectAddServerDialogOpen = (state: RootState) => state.appState.addServerDialogOpen
 export const selectObservablesDialogOpen = (state: RootState) => state.appState.observablesDialogOpen
 export const selectSystemsDialogOpen = (state: RootState) => state.appState.systemsDialogOpen
+export const selectFeaturesOfInterestDialogOpen = (state: RootState) => state.appState.featureOfInterestDialogOpen
+
 
 export const selectServers = (state: RootState) => state.appState.sensorHubServers
 export const selectPhysicalSystems = (state: RootState) => state.appState.physicalSystems
 export const selectFeatureOfInterest = (state: RootState) => state.appState.featureOfInterests
+export const selectFeatureOfInterestDatastreams = (state: RootState) => state.appState.featureOfInterestsDatastreams
 export const selectObservables = (state: RootState) => state.appState.observables
 
 export const selectMasterTime = (state: RootState) => state.appState.masterTime

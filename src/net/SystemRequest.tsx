@@ -23,8 +23,6 @@ export async function fetchPhysicalSystems(server: ISensorHubServer, withCredent
 
     let request: string = server.address + Service.API +'/systems?f=application/json&validTime=../..';
 
-    console.log('request string', request)
-
     let options: RequestInit = {};
     options.method = "GET";
     if (withCredentials) {
@@ -41,7 +39,6 @@ export async function fetchPhysicalSystems(server: ISensorHubServer, withCredent
         console.error("Physical systems request failed on :" + server.name);
         throw new Error(reason);
     });
-    console.log('response', response)
 
     return await response.json().then(
         data => {
@@ -49,11 +46,9 @@ export async function fetchPhysicalSystems(server: ISensorHubServer, withCredent
 
             let systemsData: any[] = fetchFromObject(data, "items");
 
-            console.log('system data', systemsData);
+
             for (let system of systemsData) {
 
-
-                 console.log('system', system)
                 let systemId = fetchFromObject(system, "id");
 
                 let uid = fetchFromObject(system, "properties.uid");
