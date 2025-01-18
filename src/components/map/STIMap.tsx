@@ -140,7 +140,7 @@ export default function MapComponent() {
                 //table
                 console.log('creating table', key)
                 return  (
-                    <div key={key}  id={`table-${key}`}  style={{ marginBottom: "10px" }}>
+                    <div key={key}  id={`table-${key}`}>
                         <h4>{key}</h4>
                         <TableContainer>
                             <Table size="small" aria-label={title}>
@@ -169,22 +169,30 @@ export default function MapComponent() {
             }
             else if(key === '即時影像'){
                 //image
-                const imageUrl = data[0].value;
+                const imageUrl = data;
 
+                console.log('imageUrl', imageUrl)
+
+                // && imageUrl.includes('.jpg')
                 return (
                     <div key={key} id={`video-${key}`} style={{width: "400px", height: "300px"}}>
                         <h4>{key}</h4>
-                        {imageUrl && imageUrl.includes('.jpg') ? (
-                            <img src={imageUrl} alt={key} style={{width: "400px", height: "auto"}}/>
-                        ) : ( <p>No image available.</p>
-                        )}
+                        {imageUrl.map((imgUrl, index) => (
+                            <img key={index} src={imgUrl.value} alt={key} style={{width: "400px", height: "auto"}}/>
+                        ))}
 
                     </div>
                 );
             }
             else{
                 //chart
-                const canvasId = `canvas-${key}`;
+
+                const canvasId = `canvas-${key}}`;
+
+                let charts = Chart.getChart(canvasId);
+                if(charts != undefined){
+                    charts.destroy();
+                }
 
                 const initChartData = {
                     labels: labels,
@@ -223,8 +231,9 @@ export default function MapComponent() {
                     options: chartOptions,
                 });
 
-                return  (
-                    <div key={key} id={`chart-${key}`} style={{ width: "400px", height: "300px" }}>
+                return (
+                    <div key={key} id={`chart-${key}`} style={{width: "350px", height: "300px"}}>
+                        <h4>{key}</h4>
                         <canvas id={`canvas-${key}`}/>
                     </div>
                 );
@@ -240,7 +249,6 @@ export default function MapComponent() {
 
 
     }
-
     async function fetchObservations(ds: any) {
         try {
             const obsCol = await ds.searchObservations(new ObservationFilter(), 10000);
