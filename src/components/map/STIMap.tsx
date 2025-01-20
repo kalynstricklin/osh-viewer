@@ -101,7 +101,7 @@ export default function MapComponent() {
         });
     }, [features]);
 
-    //fetch observations for pointmarker that has been selected!
+    //fetch observations specific for one pointmarker that has been selected!
     async function fetchObservationsForMarker(value: any){
         let featureObservations: { [key: string]: { datastreamName: any; value: any; timeStamp: string }[] } = {};
 
